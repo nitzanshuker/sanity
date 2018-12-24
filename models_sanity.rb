@@ -6,7 +6,7 @@ class ModelSanity
 
 
   def initialize
-  p "yaron is awesome"
+  p "yaron is awesome!!!"
   end
 
 
