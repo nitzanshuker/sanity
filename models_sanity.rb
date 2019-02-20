@@ -15,8 +15,35 @@ class ModelSanity
 
   end
 
+  def model_parts(input)
 
-def run(num)
+    res = input
+
+    x = res.split(' ').length
+    puts x
+
+    res = input.split(" ")
+
+    base_word = res[0..1]
+    p base_word
+
+    final_modles_array = []
+    final_modles_array.push(base_word.join(" "))
+
+    res.each_with_index do |item, index|
+      next if index <= 1
+      base_word << item
+      final_modles_array.push(base_word.join(" "))
+      p final_modles_array.last
+    end
+
+    return final_modles_array
+
+
+  end
+
+
+  def run(num)
 
 
   client = Mongo::Client.new([ '127.0.0.1:27017' ], :database => 'marketpulzz')
@@ -29,11 +56,39 @@ def run(num)
   dn = client[collection].find({deleted:false}, {:fields =>{name:1, product_type:1}}).limit(num)
   dn.each do |doc|
     puts "#{doc['name']} , #{doc['product_type']}"
-    text, code = call_api(doc['name'], api_key)
-    puts text
-    
+
+    hello, code = call_api(doc['name'], api_key)
+    puts hello
+
+    all_phrases = model_parts(doc['name'])
+    puts all_phrases
+
+    all_phrases.each do |phrase|
+      nlu, code = call_api(phrase, api_key)
+      nlu = JSON.parse(nlu)
+      puts nlu
+
+      models = models_in_the_nlu(nlu)
+      
+    end
+
+    break
+
   end
+
 end
+
+
+def models_in_the_nlu(nlu)
+  models_nlu = nlu["result"]["positive"]["models"] rescue []
+  models_nlu.each do |model|
+    puts model
+  end
+
+
+
+end
+
 
 
 def call_api(text, api_key)
@@ -54,7 +109,6 @@ def call_api(text, api_key)
   return [response_text, response.code]
 
 end
-
 
 
 end
